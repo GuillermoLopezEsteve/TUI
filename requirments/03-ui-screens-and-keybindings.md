@@ -49,50 +49,36 @@ modal overlay from any screen by pressing `U`.
 
 `Enter` opens the selected activity, landing on Screen 3.
 
-## 3. Screen 3 — Activity screen (two tabs)
+## 3. Screen 3 — Activity screen (permanent split view)
 
-### Tab "List"
-
-Tree of sections → tests, each line prefixed with its status symbol.
-
-```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ DHCP                                                   Student: 42  [List]   │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ Configuration                                                                │
-│   ✓ Config file exists                                                      │
-│ > ✗ File permissions are correct                                            │
-│                                                                                │
-│ IP allocation                                                                │
-│   ○ Client receives the correct IP                                          │
-│                                                                                │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ Enter run test   a run section   t view script   Tab switch   U student   C back │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Tab "Detail"
+Both panes are always visible side by side — there is no tab to switch between them. The
+left pane shows the section/test tree; the right pane always reflects whatever test is
+currently highlighted on the left.
 
 ```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ DHCP                                                   Student: 42  [Detail] │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ File permissions are correct                                                 │
-│                                                                                │
-│ Checks that /etc/dhcp/dhcpd.conf is owned by root and not world-writable.    │
-│                                                                                │
-│ FAILED                                                                        │
-│ Expected mode 644, found 666.                                                │
-│                                                                                │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ Enter run test   a run section   t view script   Tab switch   U student   C back │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────┐┌──────────────────────────────────────────────────┐
+│ Configuration                      ││ File permissions are correct                     │
+│   ✓ Config file exists            ││                                                    │
+│ > ✗ File permissions are correct  ││ Checks that /etc/dhcp/dhcpd.conf is owned by      │
+│                                    ││ root and not world-writable.                      │
+│ IP allocation                      ││                                                    │
+│   ○ Client receives the correct   ││ FAILED                                            │
+│   IP                               ││ Expected mode 644, found 666.                     │
+└────────────────────────────────────┘└──────────────────────────────────────────────────┘
+DHCP   Student: 42
+Enter run test   a run section   t view script   U student   C back
 ```
 
-- On a passed test, the result line shows the fixed string `TEST PASSED` in green
-  (`PROVA SUPERADA` in the shipped Catalan UI) instead of any script output.
-- On a failed test (including a timeout), the result line shows the captured failure message
-  in red.
+- The left pane lists sections as headings with their tests indented underneath, each
+  prefixed by its status symbol. Rows never wrap — a title too long for the pane is
+  truncated with an ellipsis, per the [responsive behavior](#7-responsive-behavior) rule
+  already in place for narrow layouts.
+- The right pane shows the highlighted test's title, description, and — once it has been
+  run — its result: the fixed string `TEST PASSED` in green (`PROVA SUPERADA` in the shipped
+  Catalan UI) on a pass, or the captured failure message in red on a fail (including a
+  timeout). Moving the selection in the left pane updates the right pane immediately.
+- Both panes are rendered at equal height (matched to whichever pane's content is taller)
+  so the split renders as one clean rectangle rather than two mismatched boxes.
 
 ## 4. Status symbols
 
@@ -110,7 +96,6 @@ Tree of sections → tests, each line prefixed with its status symbol.
 | `a` | Run every test in the current section. |
 | `t` | Open a read-only popup with the highlighted test's script. Press `t` again (or the back key) to close it. |
 | `U` | Open/reopen the student-number screen. |
-| `Tab` | Switch between the "List" and "Detail" tabs. *(Not specified in the original dictation — carried over as a sensible default; adjust if you'd rather use, e.g., left/right arrows.)* |
 | `C` | Go back one level. *(Carried over from the earlier design as a default — adjust if desired.)* |
 | `Esc` / `Ctrl+C` | Quit, restoring the terminal. *(Same as above — default, adjustable.)* |
 | `↑` / `↓` | Move the selection within the current list. |
@@ -148,6 +133,7 @@ per the [guiding principle](./00-overview.md#2-guiding-principle-keep-it-simple)
 
 ## 7. Responsive behavior
 
-- At widths of roughly 100 columns or more, render the activity screen's list comfortably;
-  below that, prioritize the current tab's content over decoration and let long lines wrap.
+- The left pane's width is a fraction of the terminal width (roughly two-fifths, with a
+  sensible minimum); the right pane takes the remainder. List rows that don't fit are
+  truncated with an ellipsis rather than wrapped, so the pane's height stays predictable.
 - At very small terminal sizes, show a minimum-size warning while still allowing quit.

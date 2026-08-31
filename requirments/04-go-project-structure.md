@@ -16,7 +16,7 @@ shape.
 
 ```text
 cmd/labcheck/          program entry point
-internal/app/          root Bubble Tea model, screen/tab navigation
+internal/app/          root Bubble Tea model, screen navigation, split-pane rendering
 internal/config/       reads/writes the single `config` file (student number + timeout)
 internal/activity/     folder scanner: activities/sections via `meta` files, tests via
                         script comment-header parsing (no YAML)
@@ -37,16 +37,8 @@ const (
     ScreenActivity
 )
 
-type Tab int
-
-const (
-    TabList Tab = iota
-    TabDetail
-)
-
 type Model struct {
     Screen        Screen
-    Tab           Tab
     Modal         ModalState
     StudentNumber int
     Activities    []Activity
