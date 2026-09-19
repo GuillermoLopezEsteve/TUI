@@ -1,83 +1,54 @@
 # LabCheck (smx2-checker)
 
-A terminal app for SMX2 lab activities: it runs instructor-authored checks against your
-machine (DHCP, DNS, etc.) and tells you, per check, what's correct and what isn't. It doesn't
-configure anything for you — it just tells you where you stand.
+Aplicació de terminal per a les activitats de laboratori de SMX2. Comprova la teva màquina
+(DHCP, DNS, etc.) i et diu, per a cada prova, què està bé i què no. No configura res per tu:
+només et diu com estàs.
 
-Requires Linux and a terminal. All in-app text is in Catalan.
+## Instal·lació
 
-## 1. Install everything
-
-Paste this whole block into a terminal. It installs Go 1.25 and git if they're missing,
-downloads the code, and builds and installs `smx2-checker`:
+Necessites Ubuntu i tenir `curl` instal·lat (normalment ja hi és). Executa:
 
 ```bash
-GO_VERSION=1.25.0
-curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
-sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-rm "go${GO_VERSION}.linux-amd64.tar.gz"
-grep -qxF 'export PATH="/usr/local/go/bin:$PATH"' ~/.bashrc || echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
-export PATH="/usr/local/go/bin:$PATH"
-
-sudo apt-get update -y
-sudo apt-get install -y git
-
-grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-export PATH="$HOME/.local/bin:$PATH"
-
-if [ -d TUI ]; then
-    (cd TUI && git pull)
-else
-    git clone https://github.com/GuillermoLopezEsteve/TUI.git
-fi
-cd TUI
-make install
-cd ..
-
-echo "Ara ja pots executar smx2-checker"
+curl -LO https://raw.githubusercontent.com/GuillermoLopezEsteve/TUI/master/install.sh
+bash install.sh
 ```
 
-It's safe to run more than once: if `TUI/` already exists it just `git pull`s the latest
-version instead of re-cloning, and it won't add duplicate lines to `~/.bashrc`. Re-run it any
-time to update — `make install` always rebuilds first, so this picks up both code and
-activity changes. `sudo` is used only for installing Go system-wide and for `apt-get`; it may
-prompt for your password.
+Això instal·la el Go i el git si et falten, baixa el codi i instal·la l'ordre
+`smx2-checker`. Si ja havies fet aquest pas abans, torna-ho a executar per actualitzar-ho tot.
 
-`export`s only apply to the current shell, so `smx2-checker` works immediately in the
-terminal you ran this in. For every other terminal, either open a new one or run
-`source ~/.bashrc` once.
+Un cop acabat, obre una terminal nova (o executa `source ~/.bashrc`) perquè `smx2-checker`
+funcioni.
 
-## 2. Run it
+## Executar
 
 ```bash
 smx2-checker
 ```
 
-On first launch it asks for your student number (1–100), then shows the list of activities.
-Basic keys, shown at the bottom of each screen:
+La primera vegada et demanarà el número d'estudiant (1–100) i després mostrarà la llista
+d'activitats. Tecles bàsiques:
 
-- `↑`/`↓` — move
-- `Enter` — open an activity / run the highlighted test
-- `a` — run every test in the highlighted section
-- `t` — view a test's script
-- `U` — change your student number
-- `C` — go back
-- `Esc` / `Ctrl+C` — quit
+- `↑`/`↓` — moure's
+- `Enter` — obrir una activitat / executar la prova
+- `a` — executar totes les proves de la secció
+- `t` — veure l'script d'una prova
+- `U` — canviar el número d'estudiant
+- `C` — enrere
+- `Esc` / `Ctrl+C` — sortir
 
-## Updating
+## Actualitzar
 
-Just re-run the block from step 1 — it pulls the latest code and reinstalls.
+Torna a executar els mateixos dos comandaments de la instal·lació.
 
-## Uninstalling
+## Desinstal·lar
 
-From inside the `TUI` folder:
+Dins de la carpeta `TUI`:
 
 ```bash
 make uninstall
 ```
 
-## More detail
+## Més informació
 
-The full activity format and runner design are documented under
+L'especificació completa del format de les activitats es troba a
 [`requirments/`](./requirments/00-overview.md).
