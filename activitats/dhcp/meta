@@ -1,2 +1,2 @@
-TITLE: DHCP
+TITLE: 01-DHCP
 DESCRIPTION: Prepara l'entorn de xarxa amb tres interfícies i configura un servidor Kea DHCP per a dues subxarxes.
