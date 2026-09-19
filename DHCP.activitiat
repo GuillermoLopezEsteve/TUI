@@ -1,0 +1,51 @@
+Configuracio del entorn
+
+- COmprovar que es ubuntu 26
+- Comprovar que te 3 interficies. (ip -o link show | wc -l ) Ha de tenir 3 + 1 loopback, és a dir 4.
+- Comprovar que te 3 interfices UP (ip -o link show | grep UP | wc -l)
+Comprovar que existeix la xarxa anomenada eth0
+Comprovar que existeix la xarxa anomenada eth1
+Comprovar que existeix la xarxa anomenada eth2
+Comprovar que la Ip a eth0 esta dintre de la xarxa 192.168.56.0/24
+Comprovar que la Ip a eth1 esta dintre de la xarxa 10.50.nºUsuari.0/24
+Comprovar que la Ip a eth2 esta dintre de la xarxa 192.168.nºUsuari.0/24
+Comprovar que la Ip a eth1 es 10.50.nºUsuari.2
+Comprovar que la Ip a eth2 es 192.168.nºUsuari.2
+Fer ping a 10.50.nºUsuari.1
+Fer ping a 1.1.1.1
+Fer ping a google.com
+
+CONFIGURACIÓ DEL DHCP
+
+Comprova que KEA DHCP esta instal·lat
+Comprova que KEA DHCP is running
+Comprova que curl està instal·lat
+Comprova que jq està instal·lat
+Comprova que /etc/kea//kea-dhcp4.conf.bak existeix
+Comprova que té exit curl -sX POST -H "Content-Type: application/json"   -u "kea-api:$(sudo cat /etc/kea/kea-api-password)"   -d '{"command":"config-get","service":["dhcp4"]}'   http://127.0.0.1:8000
+Comprova que a kea la eth1 interficies te un dhcp.
+Fes comprovacions Servidor DNS: 1.1.1.1
+Gateway corresponent
+Reserva dues IP 10.50.nº.10 i 10.50.nº.15
+1 pool de direccions de 10.50.nº.100 a 10.50.nº.150
+Temps de concessió 1 hora
+Fes una comprovacio que hi ha una lease de forma dinamica
+Fes una comprovacio que hi ha una reserva que s'esta utilitzant
+Comprova que existeix kea-dhcp4.basic.conf.bak
+Fes comprovacions per la següent configuració Interficie xarxa interna (eth2)
+Servidor DNS: 8.8.8.8		
+Time Server: 130.206.3.166
+2 pools de direccions 192.168.nº.100-120 i 192.168.nº.200-240
+Domain Name: user<nº>.lan
+Domain-search, inclueix user<nº>.lan i smx2.gabriela.lan
+Reserva 4 IPs 192.168.nº.10-13, a aquestes assigna-li un hostname
+PXE Boot server, IP: 192.168.nº.6 filename:pxelinux.0 
+Canvia el lease-time a 5 minuts i el renewal time a 2 minuts
+
+
+
+
+
+Fes les comprovacions de kea mitjançant:
+curl -sX POST -H "Content-Type: application/json"   -u "kea-api:$(sudo cat /etc/kea/kea-api-password)"   -d '{"command":"config-get","service":["dhcp4"]}'   http://127.0.0.1:8000 
+i fent jq corresponents

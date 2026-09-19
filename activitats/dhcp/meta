@@ -1,2 +1,2 @@
 TITLE: DHCP
-DESCRIPTION: Instal·lació, configuració i comprovació d'un servidor DHCP per a la xarxa de l'aula.
+DESCRIPTION: Prepara l'entorn de xarxa amb tres interfícies i configura un servidor Kea DHCP per a dues subxarxes.

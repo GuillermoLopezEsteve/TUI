@@ -1,0 +1,2 @@
+TITLE: Configuració del DHCP
+DESCRIPTION: Comprova la instal·lació de Kea i la configuració de les subxarxes d'eth1 i eth2 consultant l'API de control.
