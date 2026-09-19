@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Installs Go 1.25 and git if needed, then downloads (or updates), builds
+# Installs Go 1.27 and git if needed, then downloads (or updates), builds
 # and installs smx2-checker. Safe to run more than once.
 set -e
 
-GO_VERSION=1.25.0
+if [ "$UID" != "$EUID" ]; then
+    echo "No correr com sudo, només bash install.sh"
+    exit 2
+fi
+GO_VERSION=1.27.0
 
 curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
@@ -27,4 +31,5 @@ cd TUI
 make install
 cd ..
 
+source "$HOME/.bashrc"
 echo "Ara ja pots executar smx2-checker"
