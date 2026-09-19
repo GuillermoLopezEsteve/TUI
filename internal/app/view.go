@@ -125,22 +125,31 @@ func (m Model) viewActivity() string {
 	innerListWidth := listWidth - 4
 	innerDetailWidth := detailWidth - 4
 
-	listContent := m.renderTestList(act, innerListWidth)
-	detailContent := m.renderTestDetail(act)
+	listLines, selectedLine := m.testListLines(act, innerListWidth)
+	detailLines := strings.Split(lipgloss.NewStyle().Width(innerDetailWidth).Render(m.renderTestDetail(act)), "\n")
 
-	// Match both panes to the taller *rendered* content (after any wrapping)
-	// so the split screen comes out as a clean rectangle instead of ragged,
-	// differently sized boxes.
-	paneHeight := lipgloss.Height(lipgloss.NewStyle().Width(innerListWidth).Render(listContent))
-	if h := lipgloss.Height(lipgloss.NewStyle().Width(innerDetailWidth).Render(detailContent)); h > paneHeight {
-		paneHeight = h
+	// Reserve the screen rows used outside the box so the box itself never
+	// exceeds the terminal height: header(1) + blank(1) + border top/bottom(2)
+	// + blank(1) + help(1). Without this, a list taller than the terminal
+	// just runs off the bottom edge with no way to scroll to it.
+	const chrome = 6
+	availableHeight := m.height - chrome
+	if availableHeight < 3 {
+		// Unknown or tiny terminal (e.g. before the first WindowSizeMsg):
+		// fall back to showing the full content, as before.
+		availableHeight = max(len(listLines), len(detailLines), 3)
 	}
+
+	paneHeight := min(max(len(listLines), len(detailLines)), availableHeight)
+
+	listWindow := strings.Join(windowAround(listLines, selectedLine, paneHeight), "\n")
+	detailWindow := strings.Join(windowTop(detailLines, paneHeight), "\n")
 
 	// boxStyle's border adds 2 rows (top+bottom); Style.Height() counts them,
 	// so we pad the target by 2 to get paneHeight content rows inside.
 	const borderRows = 2
-	left := boxStyle.Width(listWidth).Height(paneHeight + borderRows).Render(listContent)
-	right := boxStyle.Width(detailWidth).Height(paneHeight + borderRows).Render(detailContent)
+	left := boxStyle.Width(listWidth).Height(paneHeight + borderRows).Render(listWindow)
+	right := boxStyle.Width(detailWidth).Height(paneHeight + borderRows).Render(detailWindow)
 	body := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 
 	help := i18n.HelpActivity
@@ -149,6 +158,40 @@ func (m Model) viewActivity() string {
 	}
 
 	return m.header(act.Title) + "\n\n" + body + "\n\n" + helpStyle.Render(help)
+}
+
+// windowAround returns at most height consecutive lines from lines, scrolled
+// so that the line at index center is visible. Centering it (rather than
+// only nudging the window by the minimum needed) is a stateless rule that
+// needs no persisted scroll offset: it depends only on the current
+// selection, yet still keeps the cursor on screen as it moves.
+func windowAround(lines []string, center, height int) []string {
+	if height >= len(lines) {
+		return lines
+	}
+	if height <= 0 {
+		return nil
+	}
+	maxStart := len(lines) - height
+	start := center - height/2
+	if start < 0 {
+		start = 0
+	}
+	if start > maxStart {
+		start = maxStart
+	}
+	return lines[start : start+height]
+}
+
+// windowTop returns at most the first height lines from lines.
+func windowTop(lines []string, height int) []string {
+	if height >= len(lines) {
+		return lines
+	}
+	if height <= 0 {
+		return nil
+	}
+	return lines[:height]
 }
 
 func (m Model) statusSymbol(key testKey) string {
@@ -165,15 +208,14 @@ func (m Model) statusSymbol(key testKey) string {
 	return failedStyle.Render("✗")
 }
 
-// renderTestList renders the section/test tree as a single-line-per-row
-// list, truncating (never wrapping) titles to fit width so the pane keeps a
-// predictable height.
-func (m Model) renderTestList(act activity.Activity, width int) string {
-	var b strings.Builder
+// testListLines renders the section/test tree as one string per row,
+// truncating (never wrapping) titles to fit width so each row stays a single
+// line. It also returns the row index of the currently selected test, so the
+// caller can scroll the list to keep it visible.
+func (m Model) testListLines(act activity.Activity, width int) (lines []string, selectedLine int) {
 	flat := 0
 	for si, sec := range act.Sections {
-		b.WriteString(titleStyle.Render(truncate(sec.Title, width)))
-		b.WriteString("\n")
+		lines = append(lines, titleStyle.Render(truncate(sec.Title, width)))
 		for ti, test := range sec.Tests {
 			key := testKey{activity: m.activeActivity, section: si, test: ti}
 			symbol := m.statusSymbol(key)
@@ -183,16 +225,19 @@ func (m Model) renderTestList(act activity.Activity, width int) string {
 			if flat == m.selected {
 				cursor = "> "
 				style = selectedStyle
+				selectedLine = len(lines)
 			}
 			title := truncate(test.Title, width-4) // cursor(2) + symbol(1) + space(1)
 			line := fmt.Sprintf("%s%s %s", cursor, symbol, title)
-			b.WriteString(style.Render(line))
-			b.WriteString("\n")
+			lines = append(lines, style.Render(line))
 			flat++
 		}
-		b.WriteString("\n")
+		lines = append(lines, "")
 	}
-	return strings.TrimRight(b.String(), "\n")
+	if len(lines) > 0 {
+		lines = lines[:len(lines)-1] // drop the trailing blank separator
+	}
+	return lines, selectedLine
 }
 
 func (m Model) renderTestDetail(act activity.Activity) string {
