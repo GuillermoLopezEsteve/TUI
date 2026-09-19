@@ -6,46 +6,49 @@ configure anything for you — it just tells you where you stand.
 
 Requires Linux and a terminal. All in-app text is in Catalan.
 
-## 1. Download
+## 1. Install everything
 
-You need [Go](https://go.dev/dl/) 1.25 or later installed (`go version` to check).
-
-**With git (recommended):**
-
-```bash
-git clone https://github.com/GuillermoLopezEsteve/TUI.git
-cd TUI
-```
-
-**With curl, if git isn't installed:**
+Paste this whole block into a terminal. It installs Go 1.25 and git if they're missing,
+downloads the code, and builds and installs `smx2-checker`:
 
 ```bash
-curl -L https://github.com/GuillermoLopezEsteve/TUI/archive/refs/heads/master.tar.gz -o tui.tar.gz
-tar xzf tui.tar.gz
-cd TUI-master
-```
+GO_VERSION=1.25.0
+curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
+rm "go${GO_VERSION}.linux-amd64.tar.gz"
+grep -qxF 'export PATH="/usr/local/go/bin:$PATH"' ~/.bashrc || echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
+export PATH="/usr/local/go/bin:$PATH"
 
-## 2. Build and install `smx2-checker`
+sudo apt-get update -y
+sudo apt-get install -y git
 
-From inside the downloaded folder:
-
-```bash
-make install
-```
-
-This builds the app and drops a small `smx2-checker` script into `~/.local/bin`, so you can
-run it as a normal command from any directory. No `sudo` needed.
-
-If `~/.local/bin` isn't already on your `PATH`, `make install` tells you so and prints the
-line to add to `~/.bashrc`:
-
-```bash
+grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 export PATH="$HOME/.local/bin:$PATH"
+
+if [ -d TUI ]; then
+    (cd TUI && git pull)
+else
+    git clone https://github.com/GuillermoLopezEsteve/TUI.git
+fi
+cd TUI
+make install
+cd ..
+
+echo "Ara ja pots executar smx2-checker"
 ```
 
-Add it, then open a new terminal (or run `source ~/.bashrc`).
+It's safe to run more than once: if `TUI/` already exists it just `git pull`s the latest
+version instead of re-cloning, and it won't add duplicate lines to `~/.bashrc`. Re-run it any
+time to update — `make install` always rebuilds first, so this picks up both code and
+activity changes. `sudo` is used only for installing Go system-wide and for `apt-get`; it may
+prompt for your password.
 
-## 3. Run it
+`export`s only apply to the current shell, so `smx2-checker` works immediately in the
+terminal you ran this in. For every other terminal, either open a new one or run
+`source ~/.bashrc` once.
+
+## 2. Run it
 
 ```bash
 smx2-checker
@@ -64,15 +67,11 @@ Basic keys, shown at the bottom of each screen:
 
 ## Updating
 
-```bash
-cd TUI      # the folder you cloned into
-git pull
-make install
-```
-
-`make install` always rebuilds first, so this picks up both code and activity changes.
+Just re-run the block from step 1 — it pulls the latest code and reinstalls.
 
 ## Uninstalling
+
+From inside the `TUI` folder:
 
 ```bash
 make uninstall
